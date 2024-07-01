@@ -166,7 +166,8 @@ public class ConfigCommands {
 		try {
 			this.targetHolder.setTarget(new Target(uri, username, password, skipSslValidation));
 
-			final HttpClientConfigurer httpClientConfigurer = HttpClientConfigurer.create(this.targetHolder.getTarget().getTargetUri())
+			URI targetUri = this.targetHolder.getTarget().getTargetUri();
+			final HttpClientConfigurer httpClientConfigurer = HttpClientConfigurer.create(targetUri)
 					.skipTlsCertificateVerification(skipSslValidation);
 
 			if (StringUtils.hasText(proxyUri)) {
@@ -180,7 +181,7 @@ public class ConfigCommands {
 			this.restTemplate.setRequestFactory(httpClientConfigurer.buildClientHttpRequestFactory());
 
 			final SecurityInfoResource securityInfoResourceBeforeLogin = restTemplate
-					.getForObject(uri + "/security/info", SecurityInfoResource.class);
+					.getForObject(targetUri + "/security/info", SecurityInfoResource.class);
 
 			boolean authenticationEnabled = false;
 			if (securityInfoResourceBeforeLogin != null) {
@@ -196,8 +197,6 @@ public class ConfigCommands {
 					StringUtils.isEmpty(password) && !StringUtils.isEmpty(username)) {
 				password = userInput.prompt("Password", "", false);
 			}
-
-			this.targetHolder.setTarget(new Target(uri, username, password, skipSslValidation));
 
 			if (StringUtils.hasText(credentialsProviderCommand) && authenticationEnabled) {
 				this.targetHolder.getTarget().setTargetCredentials(new TargetCredentials(true));
@@ -217,11 +216,9 @@ public class ConfigCommands {
 
 			this.shell.setDataFlowOperations(
 					new DataFlowTemplate(targetHolder.getTarget().getTargetUri(), this.restTemplate, this.mapper));
-			this.targetHolder.getTarget()
-					.setTargetResultMessage(String.format("Successfully targeted %s", uri));
 
 			final SecurityInfoResource securityInfoResource = restTemplate
-					.getForObject(uri + "/security/info", SecurityInfoResource.class);
+					.getForObject(targetUri + "/security/info", SecurityInfoResource.class);
 
 			if (securityInfoResource.isAuthenticated()
 					&& this.targetHolder.getTarget().getTargetCredentials() != null) {
@@ -233,7 +230,7 @@ public class ConfigCommands {
 
 			this.targetHolder.getTarget().setAuthenticated(securityInfoResource.isAuthenticated());
 			this.targetHolder.getTarget().setAuthenticationEnabled(securityInfoResource.isAuthenticationEnabled());
-			this.targetHolder.getTarget().setTargetResultMessage(String.format("Successfully targeted %s", uri));
+			this.targetHolder.getTarget().setTargetResultMessage(String.format("Successfully targeted %s", targetUri));
 
 			return this.targetHolder.getTarget().getTargetResultMessage();
 		} catch (Exception e) {

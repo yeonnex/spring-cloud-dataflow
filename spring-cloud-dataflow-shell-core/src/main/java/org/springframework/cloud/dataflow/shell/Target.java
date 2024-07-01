@@ -84,6 +84,10 @@ public class Target {
 	 */
 	public Target(String targetUriAsString, String targetUsername, String targetPassword, boolean skipSslValidation) {
 		Assert.hasText(targetUriAsString, "The provided targetUriAsString must neither be null nor empty.");
+		if (!targetUriAsString.contains("://")) {
+			targetUriAsString = DEFAULT_SCHEME + "://" + targetUriAsString;
+			this.targetResultMessage = "Defaulting to 'http' \n";
+		}
 		this.targetUri = URI.create(targetUriAsString);
 		this.skipSslValidation = skipSslValidation;
 
@@ -155,7 +159,7 @@ public class Target {
 	 */
 	public void setTargetResultMessage(String targetResultMessage) {
 		Assert.hasText(targetResultMessage, "The provided targetResultMessage must neither be null nor empty.");
-		this.targetResultMessage = targetResultMessage;
+		this.targetResultMessage = StringUtils.hasText(this.targetResultMessage) ? this.targetResultMessage + targetResultMessage : targetResultMessage;
 	}
 
 	/**
