@@ -84,6 +84,11 @@ public class Target {
 	 */
 	public Target(String targetUriAsString, String targetUsername, String targetPassword, boolean skipSslValidation) {
 		Assert.hasText(targetUriAsString, "The provided targetUriAsString must neither be null nor empty.");
+		// TODO 생각해 볼 것: http 가 아닌 다른 프로토콜로 데이터플로우 서버가 뜰 가능성이 있을까 ?
+		if (!targetUriAsString.contains("://")) {
+			targetUriAsString = DEFAULT_SCHEME + "://" + targetUriAsString;
+			this.targetResultMessage = "Defaulting to 'http' \n";
+		}
 		this.targetUri = URI.create(targetUriAsString);
 		this.skipSslValidation = skipSslValidation;
 
@@ -155,7 +160,7 @@ public class Target {
 	 */
 	public void setTargetResultMessage(String targetResultMessage) {
 		Assert.hasText(targetResultMessage, "The provided targetResultMessage must neither be null nor empty.");
-		this.targetResultMessage = targetResultMessage;
+		this.targetResultMessage = StringUtils.hasText(this.targetResultMessage) ? this.targetResultMessage + targetResultMessage : targetResultMessage;
 	}
 
 	/**
